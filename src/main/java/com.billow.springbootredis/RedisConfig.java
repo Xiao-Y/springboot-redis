@@ -1,4 +1,4 @@
-package com.billow.springbootredis.config;
+package com.billow.springbootredis;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
