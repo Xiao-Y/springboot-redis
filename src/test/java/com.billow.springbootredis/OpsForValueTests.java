@@ -1,5 +1,6 @@
 package com.billow.springbootredis;
 
+import lombok.extern.slf4j.Slf4j;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+@Slf4j
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = SpringbootRedisApplication.class)
 public class OpsForValueTests {
@@ -33,24 +35,27 @@ public class OpsForValueTests {
         opsForValue = redisTemplate.opsForValue();
     }
 
+    // 保存值
     @Test
     public void test() {
         opsForValue.set(KEY, "iii");
-        System.out.println(opsForValue.get(KEY)); // iii
+        log.info("===>>>" + opsForValue.get(KEY)); // iii
     }
 
+    // 保存含有过期时间的
     @Test
     public void test1() {
         opsForValue.set(KEY, "ddd", 3, TimeUnit.SECONDS);
-        System.out.println(opsForValue.get(KEY)); // ddd
+        log.info("===>>>" + opsForValue.get(KEY)); // ddd
         try {
             Thread.sleep(4000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        System.out.println(opsForValue.get(KEY)); // null
+        log.info("===>>>" + opsForValue.get(KEY)); // null
     }
 
+    // 查看过期时间
     @Test
     public void test2() {
         opsForValue.set(KEY, "iii", 8, TimeUnit.SECONDS);
@@ -60,15 +65,16 @@ public class OpsForValueTests {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            System.out.println(redisTemplate.getExpire(KEY));// 过期后返回 -2
+            log.info("===>>>" + redisTemplate.getExpire(KEY));// 过期后返回 -2
         }
     }
 
+    // 从指定位置覆盖，下标从 0 开始
     @Test
     public void test3() {
         opsForValue.set(KEY, "0123456789");
         opsForValue.set(KEY, "TTT", 2);
-        System.out.println(opsForValue.get(KEY)); // 01TTT56789
+        log.info("===>>>" + opsForValue.get(KEY)); // 01TTT56789
     }
 
     // 如果不存在就设置
@@ -76,13 +82,13 @@ public class OpsForValueTests {
     public void test4() {
         opsForValue.set(KEY, "0123456789");
 
-        System.out.println(opsForValue.setIfAbsent(KEY, "336")); // false
-        System.out.println(opsForValue.get(KEY)); // 0123456789
+        log.info("===>>>" + opsForValue.setIfAbsent(KEY, "336")); // false
+        log.info("===>>>" + opsForValue.get(KEY)); // 0123456789
 
         redisTemplate.delete(KEY); // true
 
-        System.out.println(opsForValue.setIfAbsent(KEY, "TTT")); // true
-        System.out.println(opsForValue.get(KEY)); // TTT
+        log.info("===>>>" + opsForValue.setIfAbsent(KEY, "TTT")); // true
+        log.info("===>>>" + opsForValue.get(KEY)); // TTT
     }
 
     // 如果存在就设置
@@ -90,15 +96,16 @@ public class OpsForValueTests {
     public void test10() {
         opsForValue.set(KEY, "0123456789");
 
-        System.out.println(opsForValue.setIfPresent(KEY, "555")); // true
-        System.out.println(opsForValue.get(KEY)); // 555
+        log.info("===>>>" + opsForValue.setIfPresent(KEY, "555")); // true
+        log.info("===>>>" + opsForValue.get(KEY)); // 555
 
         redisTemplate.delete(KEY);
 
-        System.out.println(opsForValue.setIfPresent(KEY, "999")); // false
-        System.out.println(opsForValue.get(KEY)); // null
+        log.info("===>>>" + opsForValue.setIfPresent(KEY, "999")); // false
+        log.info("===>>>" + opsForValue.get(KEY)); // null
     }
 
+    // 一次设置多个，一次获取多个
     @Test
     public void test5() {
         Map<String, String> map = new HashMap<>();
@@ -111,42 +118,46 @@ public class OpsForValueTests {
 
         List<String> strs = Arrays.asList("1", "2", "3", "4", "5", "6");
 
-        System.out.println(opsForValue.multiGet(strs)); // [a, b, x, c, t, null]
+        log.info("===>>>" + opsForValue.multiGet(strs)); // [a, b, x, c, t, null]
     }
 
+    // 对数据累加或者递减
     @Test
     public void test6() {
         ValueOperations<String, Object> opsForValue1 = redisTemplateObj.opsForValue();
         opsForValue1.set(KEY, 2);
 
-        System.out.println(opsForValue1.increment(KEY)); // 3
-        System.out.println(opsForValue1.increment(KEY, 7)); // 10
+        log.info("===>>>" + opsForValue1.increment(KEY)); // 3
+        log.info("===>>>" + opsForValue1.increment(KEY, 7)); // 10
 
-        System.out.println(opsForValue1.decrement(KEY)); // 9
-        System.out.println(opsForValue1.decrement(KEY, 7)); // 2
+        log.info("===>>>" + opsForValue1.decrement(KEY)); // 9
+        log.info("===>>>" + opsForValue1.decrement(KEY, 7)); // 2
     }
 
+    // 获取旧值，设置新值
     @Test
     public void test7() {
         opsForValue.set(KEY, "0123456789");
 
-        System.out.println(opsForValue.getAndSet(KEY, "PPP")); // 0123456789
-        System.out.println(opsForValue.get(KEY)); // PPP
+        log.info("===>>>" + opsForValue.getAndSet(KEY, "PPP")); // 0123456789
+        log.info("===>>>" + opsForValue.get(KEY)); // PPP
     }
 
+    // 字符串追加，返回长度
     @Test
     public void test8() {
         opsForValue.set(KEY, "0123456789");
 
-        System.out.println(opsForValue.append(KEY, "PPP")); // 13
-        System.out.println(opsForValue.get(KEY)); // 0123456789PPP
+        log.info("===>>>" + opsForValue.append(KEY, "PPP")); // 13
+        log.info("===>>>" + opsForValue.get(KEY)); // 0123456789PPP
     }
 
+    // 截取字符串
     @Test
     public void test9() {
         opsForValue.set(KEY, "0123456789");
 
-        System.out.println(opsForValue.size(KEY)); // 10
-        System.out.println(opsForValue.get(KEY, 2, 4)); // 234
+        log.info("===>>>" + opsForValue.size(KEY)); // 10
+        log.info("===>>>" + opsForValue.get(KEY, 2, 4)); // 234
     }
 }
