@@ -82,12 +82,26 @@ public class OpsForListTests {
         log.info("===>>" + range);
     }
 
+    // 从左边开始，保留指定位置的数据
+    @Test
+    public void trim() {
+        redisTemplate.delete(KEY);
+        opsForList.leftPushAll(KEY, "1", "2", "3", "4", "5");
+        // 5/4/3/2/1
+        opsForList.trim(KEY, 2, 3);
+        List<String> range = opsForList.range(KEY, 0, -1); //[3, 2]
+        log.info("===>>" + range);
+        // 清空所有
+        opsForList.trim(KEY, -1, 0);// []
+        range = opsForList.range(KEY, 0, -1); //[3, 2]
+        log.info("===>>" + range);
+    }
+
     // 从左边开始 移除3个字符串 "4",返回实际移除的数量
     @Test
     public void remove() {
         redisTemplate.delete(KEY);
         opsForList.leftPushAll(KEY, "1", "4", "2", "4", "3", "4", "4", "5", "4");
-
         List<String> range = opsForList.range(KEY, 0, -1); // [4, 5, 4, 4, 3, 4, 2, 4, 1]
         log.info("===>>" + range);
         // count 为 0时，移除所有
@@ -95,6 +109,37 @@ public class OpsForListTests {
         log.info("===>>" + remove);
 
         range = opsForList.range(KEY, 0, -1); //[5, 3, 4, 2, 4, 1]
+        log.info("===>>" + range);
+    }
+
+    // 如果 key 存在，则插入。返回队列长度
+    @Test
+    public void setIf() {
+        redisTemplate.delete(KEY);
+        opsForList.leftPushAll(KEY, "1", "2", "3", "4", "5");
+
+        Long aLong = opsForList.leftPushIfPresent(KEY, "6");
+        log.info("===>>" + aLong);
+
+        List<String> range = opsForList.range(KEY, 0, -1); // [6, 5, 4, 3, 2, 1]
+        log.info("===>>" + range);
+
+        redisTemplate.delete(KEY);
+        aLong = opsForList.leftPushIfPresent(KEY, "6");// 0，数据没胡插入
+        log.info("===>>" + aLong);
+
+    }
+
+    @Test
+    public void set() {
+        redisTemplate.delete(KEY);
+        opsForList.leftPushAll(KEY, "1", "2", "3", "4", "5");
+        // 5/4/3/2/1
+        List<String> range = opsForList.range(KEY, 0, -1); // [5, 4, 3, 2, 1]
+        log.info("===>>" + range);
+
+        opsForList.set(KEY, 3, "99");
+        range = opsForList.range(KEY, 0, -1); // [5, 4, 3, 99, 1]
         log.info("===>>" + range);
     }
 
