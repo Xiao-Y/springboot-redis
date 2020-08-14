@@ -58,6 +58,7 @@ public class OpsForSetTests {
         log.info("====>>>" + add);
         Set<String> members = opsForSet.members(KEY);// [1, 5, S, A, 4]
         log.info("====>>>" + members);
+
         opsForSet.remove(KEY, "A");
         members = opsForSet.members(KEY);// [1, 5, S, 4]
         log.info("====>>>" + members);
@@ -102,11 +103,14 @@ public class OpsForSetTests {
     // 随机弹出指定个数元素，3.2版本
     @Test
     public void pop() {
-        opsForSet.add(KEY, "1", "S", "A", "4", "5"); // [1, 5, S , A, 4]
+        opsForSet.add(KEY, "1", "S", "A", "4", "5"); // 5
+        Set<String> members = opsForSet.members(KEY);// [1, 5, S , A, 4]
+        log.info("====>>>" + members);
+
         List<String> pop = opsForSet.pop(KEY, 3);// [1, A, 4]
         log.info("====>>>" + pop);
 
-        Set<String> members = opsForSet.members(KEY);// [5, S]
+        members = opsForSet.members(KEY);// [5, S]
         log.info("====>>>" + members);
     }
 
@@ -181,6 +185,7 @@ public class OpsForSetTests {
         log.info("====>>>key3 " + members);
     }
 
+    // 差集
     @Test
     public void differ() {
         opsForSet.add(KEY, "1", "S", "A", "4", "5"); // 5
@@ -193,13 +198,68 @@ public class OpsForSetTests {
         members = opsForSet.members(key2);// [S, 2, Q, 1, 5, 4]
         log.info("====>>>key2 " + members);
 
+        String key3 = KEY + "3";
+        redisTemplate.delete(key3);
+        opsForSet.add(key3, "R", "2", "S", "Q", "N", "5"); // 6
+        members = opsForSet.members(key3);// [Q, R, 5, 2, S, N]
+        log.info("====>>>key3 " + members);
+
         // key2 的差集( key2 中存在但是在 KEY 中不存在的)
         Set<String> difference = opsForSet.difference(key2, KEY);// [Q, 2]
-        log.info("====>>>key2 " + difference);
+        log.info("difference====>>>key2 " + difference);
 
         // KEY 的差集( KEY 中存在但是在 key2 中不存在的)
         difference = opsForSet.difference(KEY, key2);// [A]
-        log.info("====>>>key2 " + difference);
+        log.info("difference====>>>KEY " + difference);
+
+        // 第一个添加进去的并集
+        List<String> keys = Arrays.asList(KEY, key2, key3);
+        Set<String> set = opsForSet.difference(keys);//  [A]
+        log.info("difference====>>>set1 " + set);
+
+        keys = Arrays.asList(KEY, key3, key2);
+        set = opsForSet.difference(keys);//  [A]
+        log.info("difference====>>>set2 " + set);
+
+
+        keys = Arrays.asList(key3, KEY, key2);
+        set = opsForSet.difference(keys);//  [N, R]
+        log.info("difference====>>>set3 " + set);
+
+        // 并集，保存到指定的key中
+        String key4 = KEY + 4;
+        redisTemplate.delete(key4);
+        opsForSet.differenceAndStore(KEY, key2, key4); // [A]
+
+        Set<String> set4 = opsForSet.members(key4);
+        log.info("differenceAndStore====>>>set4 " + set4);
+    }
+
+    // 交集
+    @Test
+    public void intersect() {
+        opsForSet.add(KEY, "1", "S", "A", "4", "5"); // 5
+        Set<String> members = opsForSet.members(KEY);// [1, 5, S, A, 4]
+        log.info("====>>>KEY " + members);
+
+        String key2 = KEY + "2";
+        redisTemplate.delete(key2);
+        opsForSet.add(key2, "1", "2", "S", "Q", "4", "5"); // 6
+        members = opsForSet.members(key2);// [S, 2, Q, 1, 5, 4]
+        log.info("====>>>key2 " + members);
+
+        // 交集
+        Set<String> intersect = opsForSet.intersect(key2, KEY);// [S, 1, 4, 5]
+        log.info("====>>>intersect " + intersect);
+
+        intersect = opsForSet.intersect(KEY, key2); // [S, 1, 4, 5]
+        log.info("====>>>intersect2 " + intersect);
+
+        // 交集后插入指定的key
+        String key3 = KEY + "3";
+        opsForSet.intersectAndStore(key2, KEY, key3); // [S, 5, 1, 4]
+        intersect = opsForSet.members(key3);
+        log.info("====>>>intersect2 " + intersect);
 
 
     }
