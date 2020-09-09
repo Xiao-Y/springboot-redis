@@ -7,8 +7,6 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Created by IDEA
- * User: shma1664
- * Date: 2016-08-16 14:01
  * Desc: redis分布式锁
  */
 public final class RedisLockUtil {
