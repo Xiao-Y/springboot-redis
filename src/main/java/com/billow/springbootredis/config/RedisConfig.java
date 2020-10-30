@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
@@ -17,7 +17,7 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 public class RedisConfig {
 
     @Autowired
-    private LettuceConnectionFactory connectionFactory;
+    private RedisConnectionFactory connectionFactory;
 
     @Bean
     public RedisTemplate<String, Object> redisTemplate() {
@@ -32,7 +32,7 @@ public class RedisConfig {
      * @param template
      * @param factory
      */
-    private void initDomainRedisTemplate(RedisTemplate<String, Object> template, LettuceConnectionFactory factory) {
+    private void initDomainRedisTemplate(RedisTemplate<String, Object> template, RedisConnectionFactory factory) {
         StringRedisSerializer redisSerializer = new StringRedisSerializer();
         // 定义 key 的序列化方式为 string
         // 需要注意这里Key使用了 StringRedisSerializer，那么Key只能是String类型的，不能为Long，Integer，否则会报错抛异常。

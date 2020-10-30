@@ -14,6 +14,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -27,6 +30,8 @@ public class OpsForValueTests {
     private RedisTemplate<String, String> redisTemplate;
     @Autowired
     private RedisTemplate<String, Object> redisTemplateObj;
+    //    @Autowired
+    private RedisTemplate<String, Integer> redisTemplateInt;
 
     ValueOperations<String, String> opsForValue = null;
 
@@ -159,5 +164,33 @@ public class OpsForValueTests {
 
         log.info("===>>>" + opsForValue.size(KEY)); // 10
         log.info("===>>>" + opsForValue.get(KEY, 2, 4)); // 234
+    }
+
+    @Test
+    public void test11() throws Exception {
+        int num = 10;
+        CountDownLatch latch = new CountDownLatch(num * 2);
+        ValueOperations<String, Object> ops = redisTemplateObj.opsForValue();
+        String key = "int_key";
+        ops.set(key, 0);
+        ExecutorService executorService = Executors.newCachedThreadPool();
+
+        for (int i = 0; i < num; i++) {
+            executorService.execute(() -> {
+                ops.increment(key);
+                latch.countDown();
+            });
+        }
+
+        for (int i = 0; i < num; i++) {
+            executorService.execute(() -> {
+                ops.decrement(key);
+                latch.countDown();
+            });
+        }
+
+        latch.await();
+
+        System.out.println("=======>>>> " + ops.get(key));
     }
 }

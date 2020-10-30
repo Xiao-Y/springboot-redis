@@ -1,0 +1,23 @@
+# tomcat 配置
+server:
+  port: 8080
+  servlet:
+    session:
+      timeout: 30
+  tomcat:
+    uri-encoding: UTF-8
+
+# Redis
+spring:
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    database: 10
+    timeout: 1000
+    password:
+    jedis:
+      pool:
+        max-active: 50
+        max-wait: -1ms
+        max-idle: 8
+        min-idle: 0
